@@ -6,7 +6,7 @@ public static class ObjectPropertyAccess<T> where T : class
     private static readonly QueryPredicates _predicateDictionary;
     static ObjectPropertyAccess()
     {
-        _objectParameter = ObjectParameterExpression<T>();
+        _objectParameter = ObjectParameterExpression();
         _objectProperties = GetProperties();
         _predicateDictionary = new QueryPredicates();
     }
@@ -37,8 +37,7 @@ public static class ObjectPropertyAccess<T> where T : class
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns>ParameterExpression</returns>
-    private static ParameterExpression ObjectParameterExpression<T>()
-        where T : class
+    private static ParameterExpression ObjectParameterExpression()
     {
         return Expression.Parameter(typeof(T));
     }
