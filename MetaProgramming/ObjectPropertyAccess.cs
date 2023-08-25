@@ -20,10 +20,7 @@ public static class ObjectPropertyAccess<T> where T : class
     {
         foreach (var property in _objectProperties)
         {
-            var propertyAccess = Expression.Property(_objectParameter, property);
-            var propertyValueExpression = Expression.Lambda<Func<Vector3d, int>>
-                (propertyAccess, _objectParameter);
-            _predicateDictionary.TryAdd(property.Name.ToLower(), Expressions.MethodExpressionGenerated(propertyValueExpression));
+            _predicateDictionary.TryAdd(property.Name.ToLower(), CreateParameterMap(property));
         }
         return _predicateDictionary;
     }
@@ -31,6 +28,7 @@ public static class ObjectPropertyAccess<T> where T : class
     {
         return typeof(T).GetProperties();
     }
+
     /// <summary>
     /// ObjectParameterExpression is a method that creates a ParameterExpression representing a parameter in a lambda expression.
     /// Like Object=> Object (Type Is The Generic Type)
@@ -40,6 +38,14 @@ public static class ObjectPropertyAccess<T> where T : class
     private static ParameterExpression ObjectParameterExpression()
     {
         return Expression.Parameter(typeof(T));
+    }
+
+    private static Func<string, Func<Vector3d, bool>> CreateParameterMap(PropertyInfo property)
+    {
+        var propertyAccess = Expression.Property(_objectParameter, property);
+        //var propertyValueExpression = Expression.Lambda<Func<Vector3d, int>>
+        //    (propertyAccess, _objectParameter);
+        return Expressions.MethodExpressionGenerated(propertyAccess,_objectParameter);
     }
 
 

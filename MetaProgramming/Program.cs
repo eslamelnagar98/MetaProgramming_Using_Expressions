@@ -1,5 +1,4 @@
-var queryParameterMap = new QueryPredicates();
-queryParameterMap = ObjectPropertyAccess<Vector3d>.GenerateQueryParameterMap();
+var queryParameterMap = ObjectPropertyAccess<Vector3d>.GenerateQueryParameterMap();
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<Graph>();
 builder.Services.AddSingleton(queryParameterMap);

@@ -1,39 +1,52 @@
 ﻿namespace MetaProgramming;
 public static class Expressions
 {
-    public static Func<string, Func<Vector3d, bool>> CreateCondition(Func<Vector3d, int> coordinateSelector)
-    {
-        return value => value switch
-        {
-            ['e', .. var rest] => vector => coordinateSelector(vector) == int.Parse(rest),
-            ['l', .. var rest] => vector => coordinateSelector(vector) < int.Parse(rest),
-            ['g', .. var rest] => vector => coordinateSelector(vector) > int.Parse(rest),
-            _ => throw new NotSupportedException()
-        };
-    }
-    public static Func<string, Func<Vector3d, bool>> MethodExpressionGenerated(Expression<Func<Vector3d, int>> valueExpression)
+    public static Func<string, Func<Vector3d, bool>> MethodExpressionGenerated(MemberExpression propertyAccess,
+                                                                               ParameterExpression objectParameter)
     {
         return stringValue =>
         {
-            var comparison = GetComparison(stringValue[0]);
+            var numberParameter = Expression.Parameter(typeof(int));
+            var charParameter = Expression.Parameter(typeof(char));
+            var equalComparison = Expression.Equal(propertyAccess, numberParameter);
+            var greaterThanComparison = Expression.GreaterThan(propertyAccess, numberParameter);
+            var lessThanComparison = Expression.LessThan(propertyAccess, numberParameter);
+            var equalCondition = BuildEqualityExpressionTree(charParameter, equalComparison, greaterThanComparison, lessThanComparison);
+            var final = Expression.Lambda<Func<Vector3d, char, int, bool>>(equalCondition, objectParameter, charParameter, numberParameter)
+            .Compile();  
+            var comparisonChar = stringValue[0];
             var number = int.Parse(stringValue[1..]);
-            var lambdaValue = valueExpression.Compile();
-            return vector => comparison(lambdaValue(vector), number);
-        };
-    }
-    public static Func<int, int, bool> GetComparison(char @char)
-    {
-        return @char switch
-        {
-            'e' => Equal,
-            'l' => LessThan,
-            'g' => GreaterThan,
-            _ => throw new NotSupportedException()
+            return vector => final(vector, comparisonChar, number);
         };
     }
 
-    private static bool Equal(int firstNumber, int secodnNumber) => firstNumber.CompareTo(secodnNumber) == 0;
-    private static bool LessThan(int firstNumber, int secodnNumber) => firstNumber.CompareTo(secodnNumber) < 0;
-    private static bool GreaterThan(int firstNumber, int secodnNumber) => firstNumber.CompareTo(secodnNumber) > 0;
+    private static ConditionalExpression BuildEqualityExpressionTree(ParameterExpression charParameter,
+                                                                     BinaryExpression equalComparison,
+                                                                     BinaryExpression greaterThanComparison,
+                                                                     BinaryExpression lessThanComparison)
+    {
+        var equalConstant = Expression.Constant('e');
+        var lessThanConstant = Expression.Constant('l');
+        var greaterThanConstant = Expression.Constant('g');
+        var argOutOfRangeException = Expression.Constant(new ArgumentOutOfRangeException("Bad Charcter Parameter"));
+
+        var greaterThanCondition = Expression.Condition(
+                Expression.NotEqual(charParameter, greaterThanConstant),
+                    Expression.Throw(argOutOfRangeException, typeof(bool)),
+                        greaterThanComparison);
+
+        var lessThanCondition = Expression.Condition(
+                Expression.NotEqual(charParameter, lessThanConstant),
+                    greaterThanCondition,
+                        lessThanComparison);
+
+        var equalCondition = Expression.Condition(
+                Expression.NotEqual(charParameter, equalConstant),
+                    lessThanCondition,
+                        equalComparison);
+        return equalCondition;
+    }
+
+
 
 }
