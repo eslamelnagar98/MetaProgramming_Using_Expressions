@@ -15,3 +15,9 @@ public class Graph : List<Vector3d>
 
     }
 }
+
+public class QueryPredicates<T> : Dictionary<string,Func<string,Func<T, bool>>>
+{
+    
+}
+

@@ -1,8 +1,8 @@
 ﻿namespace MetaProgramming;
 public static class Expressions
 {
-    public static Func<string, Func<Vector3d, bool>> MethodExpressionGenerated(MemberExpression propertyAccess,
-                                                                               ParameterExpression objectParameter)
+    public static Func<string, Func<T, bool>> MethodExpressionGenerated<T>(MemberExpression propertyAccess,
+                                                                           ParameterExpression vectorParameter)
     {
         return stringValue =>
         {
@@ -12,11 +12,11 @@ public static class Expressions
             var greaterThanComparison = Expression.GreaterThan(propertyAccess, numberParameter);
             var lessThanComparison = Expression.LessThan(propertyAccess, numberParameter);
             var equalCondition = BuildEqualityExpressionTree(charParameter, equalComparison, greaterThanComparison, lessThanComparison);
-            var final = Expression.Lambda<Func<Vector3d, char, int, bool>>(equalCondition, objectParameter, charParameter, numberParameter)
+            var final = Expression.Lambda<Func<T, char, int, bool>>(equalCondition, vectorParameter, charParameter, numberParameter)
             .Compile();  
             var comparisonChar = stringValue[0];
             var number = int.Parse(stringValue[1..]);
-            return vector => final(vector, comparisonChar, number);
+            return @object => final(@object, comparisonChar, number);
         };
     }
 

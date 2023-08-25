@@ -8,4 +8,4 @@ global using MetaProgramming;
 global using Microsoft.AspNetCore.Builder;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.Extensions.DependencyInjection;
-global using QueryPredicates = System.Collections.Generic.Dictionary<string, System.Func<string, System.Func<MetaProgramming.Vector3d, bool>>>;
+global using MetaProgramming.QueryPredicateFactory;
